@@ -1,0 +1,6 @@
+"Aula sobre vetores e acesso a indices "
+
+- Sobre string 
+* colocando o barra zero no fina > \0 o restante será ignorado no print
+
+** Na memória permanecerá os demias vetores. 

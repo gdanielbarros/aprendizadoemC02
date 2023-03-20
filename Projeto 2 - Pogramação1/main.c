@@ -3,34 +3,36 @@
 #include <string.h>
 #include <time.h>
 
-struct dados{
-    int dataRegistro, codCidade, codEstado, novosCasos;
-    struct dados *proximo;
+struct main{
+    int dateRegistre, Cidade, Estado, novosCasos;
+    struct main *proximo;
 };
 
-char *epochData(int tempo){
+//Converte numeros de computador em data pra humano ler :)
+char *ConvertDate(int tempo){
     time_t epoch_time = tempo;
     struct tm *tm_info = localtime(&epoch_time);
-    char *data = calloc(20,sizeof(char));
+    char *data = calloc(20,sizeof(char)); // alocação na memoria 
     strftime(data, 20, "%d/%m/%Y",tm_info);
     return data;
 }
 
-void escreverRegistro(struct dados *inicio){          // Escreve todos os dados mas SEM consolidar;
-    struct dados *noAtual = inicio;
-    FILE *novoArquivo = fopen("historico_Cargas.csv", "w");
+// Escreve todos os main
+void registrar(struct main *start){ 
+    struct main *noCurrent = start;
+    FILE *novoArquivo = fopen("historicoCargas.csv", "w");
 
     if(novoArquivo != NULL)
     {
         //printf("Arquivo copiado com sucesso!");
-        while(noAtual != NULL)
+        while(noCurrent != NULL)
         {
-            if (noAtual->proximo != NULL){
-                fprintf(novoArquivo, "%d;%d;%d;%d\n",noAtual->codCidade,noAtual->codEstado,noAtual->novosCasos,noAtual->dataRegistro);
+            if (noCurrent->proximo != NULL){
+                fprintf(novoArquivo, "%d;%d;%d;%d\n",noCurrent->Cidade,noCurrent->Estado,noCurrent->novosCasos, noCurrent->dateRegistre);
             }else{
-                fprintf(novoArquivo, "%d;%d;%d;%d",noAtual->codCidade,noAtual->codEstado,noAtual->novosCasos,noAtual->dataRegistro);
+                fprintf(novoArquivo, "%d;%d;%d;%d",noCurrent->Cidade,noCurrent->Estado,noCurrent->novosCasos, noCurrent->dateRegistre);
             }
-            noAtual = noAtual->proximo;
+            noCurrent = noCurrent->proximo;
         }
     }
     else
@@ -40,21 +42,21 @@ void escreverRegistro(struct dados *inicio){          // Escreve todos os dados 
     fclose(novoArquivo);
 }
 
-int verificarIguais(int cidade, int estado, struct dados *inicio){
-    struct dados *noAtual = inicio;
+int verificarIguais(int cidade, int estado, struct main *start){
+    struct main *noCurrent = start;
 
-    while (noAtual != NULL){
-        if (noAtual->codEstado == estado){
-            if (noAtual->codCidade == cidade){
+    while (noCurrent != NULL){
+        if (noCurrent->Estado == estado){
+            if (noCurrent->Cidade == cidade){
                 return 1;
             }
         }
-            noAtual = noAtual->proximo;
+            noCurrent = noCurrent->proximo;
     }
     return 0;
 }
 
-int manipularDados(char nomeArquivo[], struct dados **cabeca, struct dados **rabo, struct dados *cabecaLista) {
+int manipularmain(char nomeArquivo[], struct main **cabeca, struct main **rabo, struct main *cabecaLista) {
     FILE *pontArquivos = fopen(nomeArquivo, "r");
 
     if (pontArquivos != NULL) {
@@ -62,29 +64,29 @@ int manipularDados(char nomeArquivo[], struct dados **cabeca, struct dados **rab
             int campo1, campo2, campo3, campo4;
             fscanf(pontArquivos, "%d;%d;%d;%d", &campo1, &campo2, &campo3, &campo4);
 
-            int data = campo1, codigoCidade = campo2, codigoEstado = campo3, novosCasos = campo4;
+            int data = campo1, codigoCidade = campo2, codigoEstado = campo3, registronovosCasos = campo4;
 
             if (verificarIguais(codigoCidade,codigoEstado,cabecaLista) == 1){
-                struct dados *noAtual = cabecaLista;
-                while (noAtual != NULL){
-                    if (noAtual->codEstado == codigoEstado){
-                        if (noAtual->codCidade == codigoCidade){
-                            noAtual->novosCasos += novosCasos;
-                            if (data > noAtual->dataRegistro){
-                                noAtual->dataRegistro = data;
+                struct main *noCurrent = cabecaLista;
+                while (noCurrent != NULL){
+                    if (noCurrent->Estado == codigoEstado){
+                        if (noCurrent->Cidade == codigoCidade){
+                            noCurrent->novosCasos += registronovosCasos;
+                            if (data > noCurrent->dateRegistre){
+                                noCurrent->dateRegistre = data;
                             }
                         }
-                        noAtual = noAtual->proximo;
+                        noCurrent = noCurrent->proximo;
                     }else{
-                        noAtual = noAtual->proximo;
+                        noCurrent = noCurrent->proximo;
                     }
                 }
             }else{
-                struct dados *novoNo = malloc(sizeof(struct dados));
-                novoNo->dataRegistro = data;
-                novoNo->codCidade = codigoCidade;
-                novoNo->codEstado = codigoEstado;
-                novoNo->novosCasos = novosCasos;
+                struct main *novoNo = malloc(sizeof(struct main));
+                novoNo->dateRegistre = data;
+                novoNo->Cidade = codigoCidade;
+                novoNo->Estado = codigoEstado;
+                novoNo->novosCasos = registronovosCasos;
                 novoNo->proximo = NULL;
                 if (*cabeca == NULL) {
                     *cabeca = novoNo;
@@ -102,8 +104,8 @@ int manipularDados(char nomeArquivo[], struct dados **cabeca, struct dados **rab
     return 1;
 }
 
-
-void imprimir(int entradaUsuario){
+// relatorio estadual e verificação 
+void imprimir(int entrada){
     FILE *arquivoPronto = fopen("arquivoConsolidado.csv", "r");
     int somaGeral = 0;
 
@@ -111,69 +113,69 @@ void imprimir(int entradaUsuario){
         while (!feof(arquivoPronto)) {
             int campo1,campo2,campo3,campo4;
             fscanf(arquivoPronto, "%d;%d;%d;%d", &campo1, &campo2, &campo3, &campo4);
-            if (campo2 == entradaUsuario){
+            if (campo2 == entrada){
                 somaGeral += campo3;
             }
         }
-        printf("*** RELATORIO ESTADUAL ***\n");
-        printf("Codigo Estado %d\n", entradaUsuario);
-        printf("Total de casos no estado: %d casos\n",somaGeral);
-        printf("Dados por cidade:\n");
+        printf("____________Relatorio Estadual____________\n");
+        printf("Codigo Estado %d\n", entrada);
+        printf("Total de novosCasos no estado: %d novosCasos\n",somaGeral);
+        printf("main por cidade:\n");
         printf("\n");
-        printf("CIDADE \t QTD CASOS \t ULTIMA ATUALIZACAO\n");
+        printf("CIDADE \t QTD novosCasos \t ULTIMA ATUALIZACAO\n");
         printf("--------------------------------------\n");
 
         rewind(arquivoPronto);
         while (!feof(arquivoPronto)) {
             int campo1,campo2,campo3,campo4;
             fscanf(arquivoPronto, "%d;%d;%d;%d", &campo1, &campo2, &campo3, &campo4);
-            if (campo2 == entradaUsuario){
-                char *data = epochData(campo4);
+            if (campo2 == entrada){
+                char *data = ConvertDate(campo4);
                 printf("%5d %9d \t %s\n", campo1, campo3, data);
                 free(data);
             }
         }
 
     } else {
-        puts("Dados inexistentes !\n");
+        puts("main inexistentes !\n");
     }
     printf("\n");
     fclose(arquivoPronto);
 }
 
-void imprimirLista(struct dados *inicio){
-    struct dados *NoAtual = inicio;
+void imprimirLista(struct main *start){
+    struct main *NoCurrentnoCurrent = start;
 
     //caminha ate o final
-    while (NoAtual != NULL){
-        printf("%d  %d  %d  %d\n", NoAtual->codCidade, NoAtual->codEstado, NoAtual->novosCasos, NoAtual->dataRegistro);
-        NoAtual = NoAtual->proximo;
+    while (NoCurrentnoCurrent != NULL){
+        printf("%d  %d  %d  %d\n", NoCurrentnoCurrent->Cidade, NoCurrentnoCurrent->Estado, NoCurrentnoCurrent->novosCasos, NoCurrentnoCurrent->dateRegistre);
+        NoCurrentnoCurrent = NoCurrentnoCurrent->proximo;
     }
 }
 
 void exibirMenu() {
     int opcao;
-    int entrada;
+    int entradaSeg;
     char nomeArquivo[50];
-    struct dados *cabeca = NULL, *rabo = NULL;
+    struct main *cabeca = NULL, *rabo = NULL;
 
     do {
-        printf("***** SISTEMA DE CONSOLIDAÇÃO DE DADOS *****\n");
-        printf("\n");
-        printf("1- FAZER CARGA DE ARQUIVOS.\n");
-        printf("2- IMPRIMIR RELÁTORIO POR ESTADO.\n");
-        printf("0- SAIR.\n");
-        printf("DIGITE SUA OPÇÃO: ");
+        printf("___________Sistema de Dados Consolidados__________\n\n \
+                1 - Fazer carga de arquivos\n \
+                2 - Imprimir Relatorio por Estado\n \
+                0 - Sair\n \
+                Digite sua opção\n:");
+
         scanf("%d", &opcao);
 
         switch(opcao) {
             case 1:
                 printf("Digite o nome do arquivo a ser adicionado: ");
                 scanf("%s",nomeArquivo);
-                manipularDados(nomeArquivo, &cabeca,&rabo,cabeca);
-                //consolidarDados(cabeca);
-                escreverRegistro(cabeca);
-                if(manipularDados(nomeArquivo,&cabeca, &rabo,cabeca) != 0){
+                manipularmain(nomeArquivo, &cabeca,&rabo,cabeca);
+                //consolidarmain(cabeca);
+                (cabeca);
+                if(manipularmain(nomeArquivo,&cabeca, &rabo,cabeca) != 0){
                     printf("Arquivo copiado com sucesso !\n\n");
                 }else{
                     printf("Arquivo não copiado !\n\n");
@@ -182,8 +184,8 @@ void exibirMenu() {
                 break;
             case 2:
                 printf("DIGTE O CODIGO DO ESTADO :\n");
-                scanf("%i",&entrada);
-                imprimir(entrada);
+                scanf("%i",&entradaSeg);
+                imprimir(entradaSeg);
                 break;
             case 3:
                 printf("Você selecionou a opção 3.\n");
@@ -198,21 +200,21 @@ void exibirMenu() {
 }
 
 int main(){
-    struct dados *cabeca = NULL, *rabo = NULL;
+    struct main *cabeca = NULL, *rabo = NULL;
 
     //exibirMenu();
 
-    //manipularDados("cargaUF2.csv", &cabeca, &rabo, cabeca);
-    //manipularDados("cargaUF4.csv", &cabeca, &rabo);
-    //manipularDados("cargaUF10.csv", &cabeca, &rabo);
-    //manipularDados("cargaUF12.csv", &cabeca, &rabo);
-    //manipularDados("cargaUF13.csv", &cabeca, &rabo);
-    manipularDados("cargaUF5.csv", &cabeca, &rabo,cabeca);
-    //manipularDados("cargaUF16.csv", &cabeca, &rabo,cabeca);
-    //manipularDados("cargaUF22.csv", &cabeca, &rabo);
+    //manipularmain("cargaUF2.csv", &cabeca, &rabo, cabeca);
+    //manipularmain("cargaUF4.csv", &cabeca, &rabo);
+    //manipularmain("cargaUF10.csv", &cabeca, &rabo);
+    //manipularmain("cargaUF12.csv", &cabeca, &rabo);
+    //manipularmain("cargaUF13.csv", &cabeca, &rabo);
+    manipularmain("cargaUF5.csv", &cabeca, &rabo,cabeca);
+    //manipularmain("cargaUF16.csv", &cabeca, &rabo,cabeca);
+    //manipularmain("cargaUF22.csv", &cabeca, &rabo);
     imprimirLista(cabeca);
 
-    //consolidarDados(cabeca);
+    //consolidarmain(cabeca);
     //imprimir(2);
     return 0;
 }
